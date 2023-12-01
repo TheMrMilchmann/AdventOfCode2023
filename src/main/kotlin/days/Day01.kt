@@ -26,5 +26,35 @@ import utils.*
 fun main() {
     val data = readInput()
 
+    val tokenToDigit = mapOf(
+        "1" to "1",
+        "one" to "1",
+        "2" to "2",
+        "two" to "2",
+        "3" to "3",
+        "three" to "3",
+        "4" to "4",
+        "four" to "4",
+        "5" to "5",
+        "five" to "5",
+        "6" to "6",
+        "six" to "6",
+        "7" to "7",
+        "seven" to "7",
+        "8" to "8",
+        "eight" to "8",
+        "9" to "9",
+        "nine" to "9"
+    )
+
+    fun part2(): Int =
+        data.map { line ->
+            buildString {
+                append(tokenToDigit.map { line.indexOf(it.key) to it.value }.filter { (index, _) -> index >= 0 }.minBy { (index, _) -> index }.second)
+                append(tokenToDigit.map { line.lastIndexOf(it.key) to it.value }.maxBy { (index, _) -> index }.second)
+            }
+        }.map(String::toInt).sum()
+
     println("Part 1: ${data.map { "${it.first(Char::isDigit)}${it.last(Char::isDigit)}" }.map(String::toInt).sum() } ")
+    println("Part 2: ${part2()}")
 }
