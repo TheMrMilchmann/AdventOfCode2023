@@ -1,0 +1,14 @@
+/.gradle
+
+!/.idea
+/.idea/*
+!/.idea/copyright
+!/.idea/inspectionProfiles
+!/.idea/runConfigurations
+!/.idea/scopes
+!/.idea/icon.png
+
+/build
+
+# https://twitter.com/ericwastl/status/1465805354214830081
+/src/main/resources/days/Day*.txt
