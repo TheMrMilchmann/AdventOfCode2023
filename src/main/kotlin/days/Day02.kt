@@ -44,5 +44,9 @@ fun main() {
         data.filter { it.draws.all { it.getOrDefault("red", 0) <= 12 && it.getOrDefault("green", 0) <= 13 && it.getOrDefault("blue", 0) <= 14 } }
             .sumOf(Game::gameId)
 
+    fun part2(): Int =
+        data.sumOf { it.draws.maxOf { it.getOrDefault("red", 1) } * it.draws.maxOf { it.getOrDefault("green", 1) } * it.draws.maxOf { it.getOrDefault("blue", 1) } }
+
     println("Part 1: ${part1()}")
+    println("Part 2: ${part2()}")
 }
