@@ -25,51 +25,102 @@ import utils.*
 
 fun main() {
     val data: List<String> = readInput()
-    val numbers = data.mapIndexed { lineIndex: Int, line: String ->
-        var c = 0
 
-        buildList {
-            while (c < line.length) {
-                if (!line[c].isDigit()) {
-                    c++
-                    continue
-                }
+    fun part1(): Int =
+        data.mapIndexed { lineIndex: Int, line: String ->
+            var c = 0
 
-                var number = 0
-
-                val adjacentPositions = buildList {
-                    if (c > 0) {
-                        add(lineIndex to (c - 1))
-                        if (lineIndex > 0) add(lineIndex - 1 to (c - 1))
-                        if (lineIndex < data.lastIndex) add(lineIndex + 1 to (c - 1))
+            buildList {
+                while (c < line.length) {
+                    if (!line[c].isDigit()) {
+                        c++
+                        continue
                     }
 
-                    var ci = 0
+                    var number = 0
 
-                    do {
-                        number = number * 10 + line[c + ci].digitToInt()
+                    val adjacentPositions = buildList {
+                        if (c > 0) {
+                            add(lineIndex to (c - 1))
+                            if (lineIndex > 0) add(lineIndex - 1 to (c - 1))
+                            if (lineIndex < data.lastIndex) add(lineIndex + 1 to (c - 1))
+                        }
 
-                        if (lineIndex > 0) add(lineIndex - 1 to (c + ci))
-                        if (lineIndex < data.lastIndex) add(lineIndex + 1 to (c + ci))
+                        var ci = 0
 
-                        ci++
-                    } while (c + ci < line.length && line[c + ci].isDigit())
+                        do {
+                            number = number * 10 + line[c + ci].digitToInt()
 
-                    c += ci
+                            if (lineIndex > 0) add(lineIndex - 1 to (c + ci))
+                            if (lineIndex < data.lastIndex) add(lineIndex + 1 to (c + ci))
 
-                    if (c <= line.lastIndex) {
-                        add(lineIndex to c)
-                        if (lineIndex > 0) add(lineIndex - 1 to c)
-                        if (lineIndex < data.lastIndex) add(lineIndex + 1 to c)
+                            ci++
+                        } while (c + ci < line.length && line[c + ci].isDigit())
+
+                        c += ci
+
+                        if (c <= line.lastIndex) {
+                            add(lineIndex to c)
+                            if (lineIndex > 0) add(lineIndex - 1 to c)
+                            if (lineIndex < data.lastIndex) add(lineIndex + 1 to c)
+                        }
                     }
-                }
 
-                if (adjacentPositions.any { (y, x) -> val it = data[y][x]; it != '.' && !it.isDigit() }) {
-                    add(number)
+                    if (adjacentPositions.any { (y, x) -> val it = data[y][x]; it != '.' && !it.isDigit() }) {
+                        add(number)
+                    }
                 }
             }
-        }
-    }.flatten()
+        }.flatten().sum()
 
-    println("Part 1: ${numbers.sum()}")
+    fun part2(): Int =
+        data.mapIndexed { lineIndex: Int, line: String ->
+            var c = 0
+
+            buildList {
+                while (c < line.length) {
+                    if (!line[c].isDigit()) {
+                        c++
+                        continue
+                    }
+
+                    var number = 0
+
+                    val adjacentPositions = buildList {
+                        if (c > 0) {
+                            add(lineIndex to (c - 1))
+                            if (lineIndex > 0) add(lineIndex - 1 to (c - 1))
+                            if (lineIndex < data.lastIndex) add(lineIndex + 1 to (c - 1))
+                        }
+
+                        var ci = 0
+
+                        do {
+                            number = number * 10 + line[c + ci].digitToInt()
+
+                            if (lineIndex > 0) add(lineIndex - 1 to (c + ci))
+                            if (lineIndex < data.lastIndex) add(lineIndex + 1 to (c + ci))
+
+                            ci++
+                        } while (c + ci < line.length && line[c + ci].isDigit())
+
+                        c += ci
+
+                        if (c <= line.lastIndex) {
+                            add(lineIndex to c)
+                            if (lineIndex > 0) add(lineIndex - 1 to c)
+                            if (lineIndex < data.lastIndex) add(lineIndex + 1 to c)
+                        }
+                    }
+
+                    val adjacentGear = adjacentPositions.find { (y, x) -> val it = data[y][x]; it == '*' }
+                    if (adjacentGear != null) {
+                        add(adjacentGear to number)
+                    }
+                }
+            }
+        }.flatten().groupBy(Pair<*, *>::first, Pair<*, Int>::second).filterValues { it.size == 2 }.mapValues { it.value.reduce(Int::times) }.values.sum()
+
+    println("Part 1: ${part1()}")
+    println("Part 2: ${part2()}")
 }
