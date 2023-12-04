@@ -44,10 +44,13 @@ fun main() {
 
         while (i < currentCards.size) {
             val card = currentCards[i]
-            val matches = card.myNumbers.filter { it in card.winningNumbers }.size
+            val matches = card.myNumbers.count { it in card.winningNumbers }
 
             i++
-            currentCards.addAll(i, cards.drop(card.index + 1).take(matches))
+
+            for (ix in 0 until matches) {
+                currentCards.add(i + ix, cards[card.index + 1 + ix])
+            }
         }
 
         return currentCards.size
