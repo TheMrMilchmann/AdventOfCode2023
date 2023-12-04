@@ -24,15 +24,35 @@ package days
 import utils.*
 
 fun main() {
-    data class Card(val winningNumbers: Set<Int>, val myNumbers: Set<Int>)
-    val cards = readInput().map { line ->
+    data class Card(val index: Int, val winningNumbers: Set<Int>, val myNumbers: Set<Int>)
+    val cards = readInput().mapIndexed { index, line ->
         val (winningNumbers, myNumbers) = line.substringAfter(':').split('|')
 
         Card(
+            index,
             winningNumbers.trim().split("\\s+".toRegex()).map(String::toInt).toSet(),
             myNumbers.trim().split("\\s+".toRegex()).map(String::toInt).toSet(),
         )
     }
 
-    println("Part 1: ${cards.sumOf { card -> 1 shl (card.myNumbers.filter { it in card.winningNumbers }.size - 1) }}")
+    fun part1(): Int =
+        cards.sumOf { card -> 1 shl (card.myNumbers.filter { it in card.winningNumbers }.size - 1) }
+
+    fun part2(): Int {
+        val currentCards = ArrayList(cards)
+        var i = 0
+
+        while (i < currentCards.size) {
+            val card = currentCards[i]
+            val matches = card.myNumbers.filter { it in card.winningNumbers }.size
+
+            i++
+            currentCards.addAll(i, cards.drop(card.index + 1).take(matches))
+        }
+
+        return currentCards.size
+    }
+
+    println("Part 1: ${part1()}")
+    println("Part 2: ${part2()}")
 }
