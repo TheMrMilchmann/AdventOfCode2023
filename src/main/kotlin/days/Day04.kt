@@ -36,7 +36,10 @@ fun main() {
     }
 
     fun part1(): Int =
-        cards.sumOf { card -> 1 shl (card.myNumbers.filter { it in card.winningNumbers }.size - 1) }
+        cards.asSequence()
+            .map { card -> card.myNumbers.count { it in card.winningNumbers } }
+            .filter { it != 0 }
+            .sumOf { 1 shl (it - 1) }
 
     fun part2(): Int {
         val currentCards = ArrayList(cards)
