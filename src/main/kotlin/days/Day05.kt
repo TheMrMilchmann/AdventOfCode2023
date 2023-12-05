@@ -26,7 +26,6 @@ import utils.readInput
 fun main() {
     val data = readInput()
 
-    val seeds = data.first().removePrefix("seeds: ").split(' ').map(String::toLong)
     val mappings = data.drop(2).joinToString(separator = "\n").split("\n\n").map { map ->
         map.lines().drop(1).associate {
             val (destinationStart, sourceStart, length) = it.split(' ').map(String::toLong)
@@ -34,13 +33,72 @@ fun main() {
         }
     }
 
-    fun part1(): Long =
-        seeds.minOf { seed ->
+    fun part1(): Long {
+        val seeds = data.first().removePrefix("seeds: ").split(' ').map(String::toLong)
+        return seeds.minOf { seed ->
             mappings.fold(seed) { acc, map ->
                 val (sourceRange, destRange) = map.entries.firstOrNull { acc in it.key } ?: return@fold acc
                 destRange.first + (acc - sourceRange.first)
             }
         }
+    }
+
+    fun part2(): Long {
+        val seedRanges = data.first().removePrefix("seeds: ").split(' ')
+            .asSequence()
+            .map(String::toLong)
+            .chunked(2)
+            .map { (a, b) -> a..<(a + b) }
+
+        return seedRanges.flatMap { seedRange ->
+            mappings.fold(listOf(seedRange)) { acc, map ->
+                buildList {
+                    val sortedAcc = acc.sortedBy { it.first }
+                    val sortedMap = map.entries.sortedBy { it.key.first }
+                    var mapIndex = 0
+
+                    for (i in sortedAcc.indices) {
+                        var currentRange = sortedAcc[i]
+
+                        while (mapIndex < sortedMap.size) {
+                            val currentMapRange = sortedMap[mapIndex]
+                            if (currentRange.last < currentMapRange.key.first) break
+
+                            if (currentMapRange.key.last < currentRange.first) {
+                                mapIndex++
+                                continue
+                            }
+
+                            when {
+                                currentRange.first < currentMapRange.key.first -> {
+                                    val splitRange = currentRange.first..<currentMapRange.key.first
+                                    add(splitRange)
+
+                                    currentRange = currentMapRange.key.first..currentRange.last
+                                }
+                                currentRange.last <= currentMapRange.key.last -> {
+                                    val offset = currentMapRange.value.first - currentMapRange.key.first
+                                    currentRange = (currentRange.first + offset)..(currentRange.last + offset)
+                                    break
+                                }
+                                currentRange.last > currentMapRange.key.last -> {
+                                    val splitRange = currentRange.first..currentMapRange.key.last
+                                    val offset = currentMapRange.value.first - currentMapRange.key.first
+                                    add((splitRange.first + offset)..(splitRange.last + offset))
+
+                                    currentRange = (currentRange.first + (currentMapRange.key.last - currentRange.first))..currentRange.last
+                                    mapIndex++
+                                }
+                            }
+                        }
+
+                        add(currentRange)
+                    }
+                }
+            }
+        }.minOf(LongRange::first)
+    }
 
     println("Part 1: ${part1()}")
+    println("Part 2: ${part2()}")
 }
