@@ -28,134 +28,52 @@ fun main() {
         override fun toString(): String = cards
     }
 
-    fun part1(): Long {
-        val entries = readInput().map { it.split(' ') }
-            .map { (cards, bid) ->
-                val groups = cards.groupBy { it }
+    fun String.toHandType(): HandType {
+        val groups = groupBy { it }
+        return when {
+            groups.size == 1 -> HandType.FIVE
+            groups.any { (_, values) -> values.size == 4 } -> HandType.FOUR
+            groups.any { (_, values) -> values.size == 3 } -> when {
+                groups.any { (_, values) -> values.size == 2 } -> HandType.FULL_HOUSE
+                else -> HandType.THREE
+            }
+            groups.count { (_, values) -> values.size == 2 } == 2 -> HandType.TWO_PAIR
+            groups.any { (_, values) -> values.size == 2 } -> HandType.ONE_PAIR
+            else -> HandType.HIGH_CARD
+        }
+    }
 
+    fun solve(symbols: String, replaceJokers: Boolean = false): Long =
+        readInput().asSequence()
+            .map { it.split(' ') }
+            .map { (cards, bid) ->
                 val hand = Hand(
-                    type = when {
-                        groups.size == 1 -> HandType.FIVE
-                        groups.any { (_, values) -> values.size == 4 } -> HandType.FOUR
-                        groups.any { (_, values) -> values.size == 3 } -> when {
-                            groups.any { (_, values) -> values.size == 2 } -> HandType.FULL_HOUSE
-                            else -> HandType.THREE
-                        }
-                        groups.count { (_, values) -> values.size == 2 } == 2 -> HandType.TWO_PAIR
-                        groups.any { (_, values) -> values.size == 2 } -> HandType.ONE_PAIR
-                        else -> HandType.HIGH_CARD
-                    },
+                    type = if (replaceJokers) {
+                        cards.replace('J', cards.filter { it != 'J' }.groupingBy { it }.eachCount().maxByOrNull(Map.Entry<Char, Int>::value)?.key ?: 'A')
+                    } else {
+                        cards
+                    }.toHandType(),
                     cards = cards
                 )
 
                 hand to bid.toLong()
             }
+            .sortedWith { (a, _), (b, _) ->
+                var res = a.type.compareTo(b.type)
+                if (res != 0) return@sortedWith res
 
-        val symbols = listOf('A', 'K', 'Q', 'J', 'T')
-        val cmp: Comparator<Hand> = compareBy(Hand::type)
-            .then { alpha, beta ->
                 for (i in 0..<5) {
-                    val a = alpha.cards[i]
-                    val aI = symbols.indexOf(a)
-
-                    val b = beta.cards[i]
-                    val bI = symbols.indexOf(b)
-
-                    when {
-                        aI >= 0 && (bI < 0 || bI > aI) -> return@then 1
-                        aI >= 0 && (bI < aI) -> return@then -1
-                        aI < 0 && bI >= 0 -> return@then -1
-                        else -> {
-                            val x = a.compareTo(b)
-                            if (x != 0) return@then x
-                        }
-                    }
+                    res = compareValuesBy(a, b) { it: Hand -> symbols.indexOf(it.cards[i]) }
+                    if (res != 0) return@sortedWith res
                 }
 
-                0
+                error("Should never be reached")
             }
+            .mapIndexed { index, (_, bid) -> (index + 1) * bid }
+            .sum()
 
-        return entries.sortedWith { (a, _), (b, _) -> cmp.compare(a, b) }.mapIndexed { index, (_, bid) -> (index + 1) * bid }.sum()
-    }
-
-    fun part2(): Long {
-        val entries = readInput().map { it.split(' ') }
-            .map { (cards, bid) ->
-                val groups = cards.filter { it != 'J' }.groupBy { it }
-                val jokers = cards.count { it == 'J' }
-
-                val hand = Hand(
-                    type = when {
-                        jokers == 5 || groups.size == 1 -> HandType.FIVE
-                        groups.any { (_, values) -> values.size == 4 } -> when (jokers) {
-                            1 -> HandType.FIVE
-                            else -> HandType.FOUR
-                        }
-                        groups.any { (_, values) -> values.size == 3 } -> when (jokers) {
-                            2 -> HandType.FIVE
-                            1 -> HandType.FOUR
-                            else -> when {
-                                groups.any { (_, values) -> values.size == 2 } -> HandType.FULL_HOUSE
-                                else -> HandType.THREE
-                            }
-                        }
-                        groups.count { (_, values) -> values.size == 2 } == 2 -> when (jokers) {
-                            3 -> HandType.FIVE
-                            2 -> HandType.FOUR
-                            1 -> HandType.FULL_HOUSE
-                            else -> HandType.TWO_PAIR
-                        }
-                        groups.any { (_, values) -> values.size == 2 } -> when (jokers) {
-                            3 -> HandType.FIVE
-                            2 -> HandType.FOUR
-                            1 -> HandType.THREE
-                            else -> HandType.ONE_PAIR
-                        }
-                        else -> when (jokers) {
-                            4 -> HandType.FIVE
-                            3 -> HandType.FOUR
-                            2 -> HandType.THREE
-                            1 -> HandType.ONE_PAIR
-                            else -> HandType.HIGH_CARD
-                        }
-                    },
-                    cards = cards
-                )
-
-                hand to bid.toLong()
-            }
-
-        val symbols = listOf('A', 'K', 'Q', 'T')
-        val cmp: Comparator<Hand> = compareBy(Hand::type)
-            .then { alpha, beta ->
-                for (i in 0..<5) {
-                    val a = alpha.cards[i]
-                    val aI = symbols.indexOf(a)
-
-                    val b = beta.cards[i]
-                    val bI = symbols.indexOf(b)
-
-                    when {
-                        a == 'J' && b != 'J' -> return@then -1
-                        a != 'J' && b == 'J' -> return@then 1
-                        aI >= 0 && (bI < 0 || bI > aI) -> return@then 1
-                        aI >= 0 && (bI < aI) -> return@then -1
-                        aI < 0 && bI >= 0 -> return@then -1
-                        else -> {
-                            val x = a.compareTo(b)
-                            if (x != 0) return@then x
-                        }
-                    }
-                }
-
-                0
-            }
-
-        return entries.sortedWith { (a, _), (b, _) -> cmp.compare(a, b) }.mapIndexed { index, (_, bid) -> (index + 1) * bid }.sum()
-    }
-
-    println("Part 1: ${part1()}")
-    println("Part 2: ${part2()}")
+    println("Part 1: ${solve("23456789TJQKA")}")
+    println("Part 2: ${solve("J23456789TQKA", replaceJokers = true)}")
 }
 
 private enum class HandType {
