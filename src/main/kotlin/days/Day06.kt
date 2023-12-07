@@ -24,9 +24,6 @@ package days
 import utils.*
 
 fun main() {
-    val records = readInput()
-        .map { it.substringAfter(':').trim().split("\\s+".toRegex()).map(String::toInt) }
-        .let { (times, distances) -> times.zip(distances) }
-
-    println("Part 1: ${records.map { (time, distance) -> (0..time).map { (time - it) * it }.count { it > distance } }.reduce(Int::times)}")
+    println("Part 1: ${readInput().map { it.substringAfter(':').trim().split("\\s+".toRegex()).map(String::toInt) }.let { (times, distances) -> times.zip(distances) }.map { (time, distance) -> (0..time).map { (time - it) * it }.count { it > distance } }.reduce(Int::times)}")
+    println("Part 2: ${readInput().map { it.substringAfter(':').trim().replace("\\s+".toRegex(), "").toLong() }.let { (time, distance) -> (0..time).map { (time - it) * it }.count { it > distance } }}")
 }
