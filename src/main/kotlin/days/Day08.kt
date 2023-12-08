@@ -34,9 +34,9 @@ fun main() {
         instructions to mappings
     }
 
-    fun part1(): Int {
-        var step = 0
-        var pos = "AAA"
+    fun findRequiredSteps(start: String, isDest: (String) -> Boolean): Long {
+        var step = 0L
+        var pos = start
 
         val instructionsItr = iterator {
             while (true) {
@@ -44,7 +44,7 @@ fun main() {
             }
         }
 
-        while (pos != "ZZZ") {
+        while (!isDest(pos)) {
             pos = when (val instruction = instructionsItr.next()) {
                 'L' -> mappings[pos]!!.first
                 'R' -> mappings[pos]!!.second
@@ -57,5 +57,20 @@ fun main() {
         return step
     }
 
-    println("Part 1: ${part1()}")
+    tailrec fun gcd(x: Long, y: Long): Long =
+        if (y == 0L) x else gcd(y, x % y)
+
+    fun lcm(x: Long, y: Long): Long =
+        if (x == 0L || y == 0L) 0 else (x * y) / gcd(x, y)
+
+    fun solve(
+        isStart: (String) -> Boolean,
+        isDest: (String) -> Boolean
+    ): Long =
+        mappings.mapNotNull { (k, _) -> if (isStart(k)) k else null }
+            .map { findRequiredSteps(it, isDest) }
+            .reduce(::lcm)
+
+    println("Part 1: ${solve(isStart = { it == "AAA" }, isDest = { it == "ZZZ" })}")
+    println("Part 2: ${solve(isStart = { it.endsWith('A') }, isDest = { it.endsWith('Z') })}")
 }
