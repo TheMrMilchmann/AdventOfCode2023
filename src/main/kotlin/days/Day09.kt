@@ -36,4 +36,5 @@ fun main() {
     }
 
     println("Part 1: ${values.map(::next).sum()}")
+    println("Part 1: ${values.map(List<Int>::asReversed).map(::next).sum()}")
 }
