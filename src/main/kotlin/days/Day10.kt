@@ -24,6 +24,7 @@ package days
 import days.Direction.*
 import days.Layout.*
 import utils.*
+import kotlin.math.absoluteValue
 
 fun main() {
     val grid = readInput().map(String::toList).toGrid()
@@ -61,13 +62,14 @@ fun main() {
     }
 
     println("Part 1: ${positions.count() / 2}")
+    println("Part 2: ${positions.fold(0 to 0) { acc, (_, direction) -> direction.inc(acc) }.first.absoluteValue - (positions.count() / 2) + 1}")
 }
 
-private enum class Direction {
-    N,
-    W,
-    S,
-    E;
+private enum class Direction(val inc: (Pair<Int, Int>) -> Pair<Int, Int>) {
+    N({ (acc, d) -> acc to (d + 1) }),
+    W({ (acc, d) -> (acc - d) to d }),
+    S({ (acc, d) -> acc to (d - 1) }),
+    E({ (acc, d) -> (acc + d) to d });
 
     operator fun unaryMinus(): Direction = entries[(ordinal + 2) % entries.size]
 
