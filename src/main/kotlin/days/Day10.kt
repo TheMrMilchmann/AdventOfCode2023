@@ -59,10 +59,10 @@ fun main() {
 
         val layout = layouts[nextPos] ?: error("Invalid direction: pos=$nextPos dir=$direction")
         nextPos to layout.dirs.first { it != -direction }
-    }
+    }.toList()
 
-    println("Part 1: ${positions.count() / 2}")
-    println("Part 2: ${positions.fold(0 to 0) { acc, (_, direction) -> direction.inc(acc) }.first.absoluteValue - (positions.count() / 2) + 1}")
+    println("Part 1: ${positions.size / 2}")
+    println("Part 2: ${positions.fold(0 to 0) { acc, (_, direction) -> direction.inc(acc) }.first.absoluteValue - (positions.size / 2) + 1}")
 }
 
 private enum class Direction(val inc: (Pair<Int, Int>) -> Pair<Int, Int>) {
