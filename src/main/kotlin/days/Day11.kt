@@ -30,9 +30,9 @@ fun main() {
     val expandRows = data.verticalIndices.filter { y -> data.horizontalIndices.none { x -> data[x, y] == '#' } }
     val expandColumns = data.horizontalIndices.filter { x -> data.verticalIndices.none { y -> data[x, y] == '#' } }
 
-    data class Pos(val x: Int, val y: Int) {
+    data class Pos(val x: Long, val y: Long) {
 
-        infix fun distanceTo(other: Pos): Int =
+        infix fun distanceTo(other: Pos): Long =
             abs(other.x - x) + abs(other.y - y)
 
     }
@@ -56,16 +56,22 @@ fun main() {
 
     }
 
-    val galaxies = data.verticalIndices.flatMap { y ->
-        data.horizontalIndices.mapNotNull { x ->
-            if (data[x, y] == '.') return@mapNotNull null
+    fun solve(expandBy: Long): Long {
+        val galaxies = data.verticalIndices.flatMap { y ->
+            data.horizontalIndices.mapNotNull { x ->
+                if (data[x, y] == '.') return@mapNotNull null
 
-            Pos(
-                x = x.intValue + expandColumns.count { x > it },
-                y = y.intValue + expandRows.count { y > it }
-            )
+                Pos(
+                    x = x.intValue.toLong() + expandColumns.count { x > it } * (expandBy - 1),
+                    y = y.intValue.toLong() + expandRows.count { y > it } * (expandBy - 1)
+                )
+            }
         }
+
+        return galaxies.flatMap { a -> galaxies.mapNotNull { b -> if (a != b) UnorderedPair(a, b) else null } }.toSet().sumOf { (a, b) -> a distanceTo b }
     }
 
-    println("Part 1: ${galaxies.flatMap { a -> galaxies.mapNotNull { b -> if (a != b) UnorderedPair(a, b) else null } }.toSet().sumOf { (a, b) -> a distanceTo b }}")
+
+    println("Part 1: ${solve(expandBy = 2L)}")
+    println("Part 2: ${solve(expandBy = 1_000_000L)}")
 }
