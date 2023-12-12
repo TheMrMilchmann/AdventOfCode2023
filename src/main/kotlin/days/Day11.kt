@@ -22,7 +22,7 @@
 package days
 
 import utils.*
-import kotlin.math.abs
+import kotlin.math.*
 
 fun main() {
     val data = readInput().map(String::toList).toGrid()
