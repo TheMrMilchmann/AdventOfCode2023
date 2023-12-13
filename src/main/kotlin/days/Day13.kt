@@ -26,7 +26,7 @@ import utils.*
 fun main() {
     val patterns = readInput().joinToString(separator = "\n").split("\n\n").map { it -> it.split("\n").map { it.toList() }.toGrid() }
 
-    fun Grid<Char>.indexOfHorizontalReflection(): Int {
+    fun Grid<Char>.indexOfHorizontalReflection(isEqual: (List<Char>, List<Char>) -> Boolean): Int {
         for (i in 1 until height) {
             val up = buildList {
                 for (j in verticalIndices.filter { it.intValue < i }.asReversed()) {
@@ -45,13 +45,13 @@ fun main() {
             }
 
             val n = minOf(up.size, down.size)
-            if (up.subList(0, n).map { this[it] } == down.subList(0, n).map { this[it] }) return i
+            if (isEqual(up.subList(0, n).map { this[it] }, down.subList(0, n).map { this[it] })) return i
         }
 
         return 0
     }
 
-    fun Grid<Char>.indexOfVerticalReflection(): Int {
+    fun Grid<Char>.indexOfVerticalReflection(isEqual: (List<Char>, List<Char>) -> Boolean): Int {
         for (i in 1 until width) {
             val left = buildList {
                 for (j in horizontalIndices.filter { it.intValue < i }.asReversed()) {
@@ -70,11 +70,27 @@ fun main() {
             }
 
             val n = minOf(left.size, right.size)
-            if (left.subList(0, n).map { this[it] } == right.subList(0, n).map { this[it] }) return i
+            if (isEqual(left.subList(0, n).map { this[it] }, right.subList(0, n).map { this[it] })) return i
         }
 
         return 0
     }
 
-    println("Part 1: ${patterns.sumOf { pattern -> 100 * pattern.indexOfHorizontalReflection() + pattern.indexOfVerticalReflection() }}")
+    fun <E> List<E>.isAlmostEqual(other: List<E>): Boolean {
+        if (size != other.size) return false
+
+        var corrected = false
+
+        for (i in indices) {
+            if (this[i] != other[i]) {
+                if (corrected) return false
+                corrected = true
+            }
+        }
+
+        return corrected
+    }
+
+    println("Part 1: ${patterns.sumOf { pattern -> 100 * pattern.indexOfHorizontalReflection(List<*>::equals) + pattern.indexOfVerticalReflection(List<*>::equals) }}")
+    println("Part 2: ${patterns.sumOf { pattern -> 100 * pattern.indexOfHorizontalReflection(List<*>::isAlmostEqual) + pattern.indexOfVerticalReflection(List<*>::isAlmostEqual) }}")
 }
