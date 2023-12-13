@@ -22,23 +22,31 @@
 package days
 
 import utils.*
+import java.util.concurrent.ConcurrentHashMap
 
 fun main() {
     val data = readInput().map { line -> line.split(" ").let { (str, groups) -> str to groups.split(',').map(String::toInt) } }
 
     data class State(val index: Int, val inGroup: Boolean, val lastGroup: Int, val lastGroupSize: Int)
 
-    fun String.countMatches(groups: List<Int>, state: State): Long = when {
-        state.index >= length -> if (groups.lastIndex == state.lastGroup && groups.last() == state.lastGroupSize) 1 else 0
-        state.lastGroup >= groups.size || (state.lastGroup != -1 && ((state.lastGroupSize > groups[state.lastGroup]) || (!state.inGroup && state.lastGroupSize < groups[state.lastGroup]))) -> 0L
-        else -> when (val token = this[state.index]) {
-            '.' -> countMatches(groups, state.copy(index = state.index + 1, inGroup = false))
-            '#' -> countMatches(groups, state.copy(index = state.index + 1, inGroup = true, lastGroup = state.lastGroup + if (!state.inGroup) 1 else 0, lastGroupSize = if (state.inGroup) state.lastGroupSize + 1 else 1))
-            '?' -> countMatches(groups, state.copy(index = state.index + 1, inGroup = false)) +
-                countMatches(groups, state.copy(index = state.index + 1, inGroup = true, lastGroup = state.lastGroup + if (!state.inGroup) 1 else 0, lastGroupSize = if (state.inGroup) state.lastGroupSize + 1 else 1))
-            else -> error("Unexpected token: '$token'")
+    fun String.countMatches(
+        groups: List<Int>,
+        state: State,
+        cache: MutableMap<State, Long> = ConcurrentHashMap()
+    ): Long = cache.getOrPut(state) {
+        when {
+            state.index >= length -> if (groups.lastIndex == state.lastGroup && groups.last() == state.lastGroupSize) 1 else 0
+            state.lastGroup >= groups.size || (state.lastGroup != -1 && ((state.lastGroupSize > groups[state.lastGroup]) || (!state.inGroup && state.lastGroupSize < groups[state.lastGroup]))) -> 0L
+            else -> when (val token = this[state.index]) {
+                '.' -> countMatches(groups, state.copy(index = state.index + 1, inGroup = false), cache)
+                '#' -> countMatches(groups, state.copy(index = state.index + 1, inGroup = true, lastGroup = state.lastGroup + if (!state.inGroup) 1 else 0, lastGroupSize = if (state.inGroup) state.lastGroupSize + 1 else 1), cache)
+                '?' -> countMatches(groups, state.copy(index = state.index + 1, inGroup = false), cache) +
+                    countMatches(groups, state.copy(index = state.index + 1, inGroup = true, lastGroup = state.lastGroup + if (!state.inGroup) 1 else 0, lastGroupSize = if (state.inGroup) state.lastGroupSize + 1 else 1), cache)
+                else -> error("Unexpected token: '$token'")
+            }
         }
     }
 
     println("Part 1: ${data.sumOf { (str, groups) -> str.countMatches(groups, State(index = 0, inGroup = false, lastGroup = -1, lastGroupSize = 0)) }}")
+    println("Part 2: ${data.map { (str, groups) -> buildList { for (i in 0..4) add(str) }.joinToString(separator = "?") to buildList { for (i in 0..4) addAll(groups) } }.sumOf { (str, groups) -> str.countMatches(groups, State(index = 0, inGroup = false, lastGroup = -1, lastGroupSize = 0)) }}")
 }
