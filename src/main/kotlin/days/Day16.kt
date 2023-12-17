@@ -52,26 +52,31 @@ fun main() {
         else -> error("Unexpected character: ${grid[mirror]}")
     }
 
-    val origins = ArrayDeque<Origin>()
-    origins += Origin(pos = GridPos((-1).hPos, 0.vPos), dir = E)
+    fun countEnergizedTiles(beamOrigin: Origin): Int {
+        val origins = ArrayDeque<Origin>()
+        origins += beamOrigin
 
-    val energy = mutableMapOf<GridPos, Int>()
+        val energizedTiles = HashSet<GridPos>()
 
-    val visited = HashSet<Origin>()
-    while (origins.isNotEmpty()) {
-        val origin = origins.removeFirst()
-        if (!visited.add(origin)) continue
+        val visited = HashSet<Origin>()
+        while (origins.isNotEmpty()) {
+            val origin = origins.removeFirst()
+            if (!visited.add(origin)) continue
 
-        val (pos, dir) = origin
-        val beam = grid.beam(pos, when (dir) {
-            N -> grid::shiftUp
-            E -> grid::shiftRight
-            S -> grid::shiftDown
-            W -> grid::shiftLeft
-        })
+            val (pos, dir) = origin
+            val beam = grid.beam(pos, when (dir) {
+                N -> grid::shiftUp
+                E -> grid::shiftRight
+                S -> grid::shiftDown
+                W -> grid::shiftLeft
+            })
 
-        origins += origin reflectAt (beam.takeWhileInclusive { grid[it] == '.' }.onEach { energy[it] = energy.getOrDefault(it, 0) + 1 }.lastOrNull()?.let { if (grid[it] == '.') null else it } ?: continue)
+            origins += origin reflectAt (beam.takeWhileInclusive { grid[it] == '.' }.onEach { energizedTiles += it }.lastOrNull()?.let { if (grid[it] == '.') null else it } ?: continue)
+        }
+
+        return energizedTiles.size
     }
 
-    println("Part 1: ${energy.size}")
+    println("Part 1: ${countEnergizedTiles(Origin(pos = GridPos((-1).hPos, 0.vPos), dir = E))}")
+    println("Part 2: ${(grid.horizontalIndices.flatMap { x -> listOf(Origin(pos = GridPos(x, (-1).vPos), dir = S), Origin(pos = GridPos(x, grid.verticalIndices.size.vPos), dir = N)) } + grid.verticalIndices.flatMap { y -> listOf(Origin(pos = GridPos((-1).hPos, y), dir = E), Origin(pos = GridPos(grid.horizontalIndices.size.hPos, y), dir = W)) }).maxOf(::countEnergizedTiles)}")
 }
