@@ -39,7 +39,6 @@ fun main() {
 
         while (queue.isNotEmpty()) {
             val (heat, momentum) = queue.remove()
-
             if (!visited.add(momentum)) continue
 
             if (momentum.pos == grid.positions.last()) return heat
@@ -64,5 +63,39 @@ fun main() {
         error("End never reached")
     }
 
+    fun part2(): Int {
+        val queue = PriorityQueue(compareBy(HeatState::heat))
+        queue += HeatState(heat = 0, momentum = Momentum(pos = GridPos(0.hPos, 0.vPos), dir = E, steps = 0))
+
+        val visited = HashSet<Momentum>()
+
+        while (queue.isNotEmpty()) {
+            val (heat, momentum) = queue.remove()
+            if (!visited.add(momentum)) continue
+
+            if (momentum.pos == grid.positions.last()) return heat
+
+            for (dir in Direction.entries) {
+                if (dir == -momentum.dir) continue
+                if (momentum.steps < 4 && dir != momentum.dir) continue
+
+                val steps = if (dir == momentum.dir) momentum.steps + 1 else 1
+                if (steps == 11) continue
+
+                val position = when (dir) {
+                    N -> grid::shiftUp
+                    E -> grid::shiftRight
+                    S -> grid::shiftDown
+                    W -> grid::shiftLeft
+                }(momentum.pos) ?: continue
+
+                queue += HeatState(heat = heat + grid[position], Momentum(pos = position, dir = dir, steps = steps))
+            }
+        }
+
+        error("End never reached")
+    }
+
     println("Part 1: ${part1()}")
+    println("Part 2: ${part2()}")
 }
