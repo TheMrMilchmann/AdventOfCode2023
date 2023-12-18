@@ -26,17 +26,26 @@ import utils.*
 fun main() {
     val initializationSequence = readInput().single().split(",")
 
-    fun hash(string: String): Int {
-        var res = 0
+    fun hash(string: String): Int =
+        string.fold(0) { acc, it -> ((acc + it.code) * 17) % 256 }
 
-        for (c in string) {
-            res += c.code
-            res *= 17
-            res %= 256
+    fun part2(): Int {
+        val boxes: MutableList<MutableMap<String, Int>> = MutableList(size = 256) { mutableMapOf() }
+
+        for (seq in initializationSequence) {
+            val (l, r) = seq.split("[=\\-]".toRegex())
+            val box = boxes[hash(l)]
+
+            if (r.isEmpty()) { // -
+                box.remove(l)
+            } else { // =
+                box[l] = r.toInt()
+            }
         }
 
-        return res
+        return boxes.withIndex().sumOf { (boxNumber, box) -> box.values.withIndex().sumOf { (slot, focalLength) -> (1 + boxNumber) * (slot + 1) * focalLength } }
     }
 
     println("Part 1: ${initializationSequence.map(::hash).sum()}")
+    println("Part 1: ${part2()}")
 }
