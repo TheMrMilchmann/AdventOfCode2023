@@ -21,7 +21,7 @@
  */
 package utils
 
-enum class Direction(val inc: (Pair<Int, Int>) -> Pair<Int, Int>) {
+enum class Direction(val inc: (Pair<Long, Long>) -> Pair<Long, Long>) {
     N({ (acc, d) -> acc to (d + 1) }),
     W({ (acc, d) -> (acc - d) to d }),
     S({ (acc, d) -> acc to (d - 1) }),

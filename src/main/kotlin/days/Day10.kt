@@ -62,7 +62,7 @@ fun main() {
     }.toList()
 
     println("Part 1: ${positions.size / 2}")
-    println("Part 2: ${positions.fold(0 to 0) { acc, (_, direction) -> direction.inc(acc) }.first.absoluteValue - (positions.size / 2) + 1}")
+    println("Part 2: ${positions.fold(0L to 0L) { acc, (_, direction) -> direction.inc(acc) }.first.absoluteValue - (positions.size / 2) + 1}")
 }
 
 private enum class Layout(vararg val dirs: Direction) {

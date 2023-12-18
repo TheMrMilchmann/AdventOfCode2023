@@ -26,21 +26,38 @@ import utils.Direction.*
 import kotlin.math.absoluteValue
 
 fun main() {
-    data class Instruction(val dir: Direction, val steps: Int, val color: String)
+    data class Instruction(val dir: Direction, val steps: Int)
 
-    val instructions = readInput().map { line ->
-        val (dir, steps, color) = line.split(' ')
+    fun part1(): List<Instruction> =
+        readInput().map { line ->
+            val (dir, steps) = line.split(' ')
 
-        val direction = when (dir) {
-            "U" -> N
-            "D" -> S
-            "L" -> W
-            "R" -> E
-            else -> error("Unexpected direction: $dir")
+            val direction = when (dir) {
+                "U" -> N
+                "D" -> S
+                "L" -> W
+                "R" -> E
+                else -> error("Unexpected direction: $dir")
+            }
+
+            Instruction(direction, steps.toInt())
         }
 
-        Instruction(direction, steps.toInt(), color.removePrefix("(").removeSuffix(")"))
-    }
+    fun part2(): List<Instruction> =
+        readInput().map { line ->
+            val instr = line.split(' ').last().removePrefix("(#").removeSuffix(")")
+            val steps = instr.substring(startIndex = 0, endIndex = 5)
+            val direction = when (val dir = instr.last()) {
+                '0' -> E
+                '1' -> S
+                '2' -> W
+                '3' -> N
+                else -> error("Unexpected direction: $dir")
+            }
 
-    println("Part 1: ${instructions.fold(0 to 0) { acc, (dir, steps, _) -> (1..steps).fold(acc) { iAcc, _ -> dir.inc(iAcc) } }.first.absoluteValue + (instructions.sumOf(Instruction::steps) / 2) + 1}")
+            Instruction(direction, steps.toInt(radix = 16))
+        }
+
+    println("Part 1: ${part1().let { instructions -> instructions.fold(0L to 0L) { acc, (dir, steps) -> (1..steps).fold(acc) { iAcc, _ -> dir.inc(iAcc) } }.first.absoluteValue + (instructions.sumOf(Instruction::steps) / 2) + 1 }}")
+    println("Part 2: ${part2().let { instructions -> instructions.fold(0L to 0L) { acc, (dir, steps) -> (1..steps).fold(acc) { iAcc, _ -> dir.inc(iAcc) } }.first.absoluteValue + (instructions.sumOf(Instruction::steps) / 2) + 1 }}")
 }
